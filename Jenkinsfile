@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout Code') { // Clones the repository
             steps {
-                git 'https://github.com/hello-world/java-app.git'
+                git 'https://github.com/riyabambal/hello-world.git'
             }
         }
         stage('Build with Maven') { // Builds the project and creates JAR/WAR
