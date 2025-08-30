@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     stages {
         stage('Checkout Code') { // Clones the repository
             steps {
@@ -17,28 +16,13 @@ pipeline {
                 sh 'mvn test'
             }
         }
-
-
-
-
-
-
-
-
-    post {
-
-        success {
-
-            echo 'Build and deployment successful!'
-
-        }
-
-        failure {
-
-            echo 'Build failed!'
-
-        }
-
     }
-
-}
+    post {
+        success {
+            echo 'Build and deployment successful!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
+}  // <-- Added this closing brace for the 'pipeline' block.
