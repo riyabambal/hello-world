@@ -46,10 +46,6 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh 'sonar-scanner -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=src -Dsonar.login=${SONAR_TOKEN}'
-                }
-            }
-            post {
-                always {
                     waitForQualityGate abortPipeline: true
                 }
             }
