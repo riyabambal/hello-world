@@ -18,21 +18,24 @@ pipeline {
         }
         stage('Code Analysis with SonarQube') {
             environment {
-                SONARQUBE_SERVER = 'sonarqube' // Name of the SonarQube server configured in Jenkins
+                SONARQUBE_SERVER = 'riya-sonar'  // Your Jenkins SonarQube server name
             }
             steps {
                 withSonarQubeEnv(SONARQUBE_SERVER) {
-                    sh 'mvn sonar:sonar'
+                    // Use the specific tool if configured
+                    // If you want to specify the scanner manually, create and use the tool
+                    // Otherwise, mvn plugin uses sonar-scanner internally
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=riya-sonar-project'
                 }
             }
         }
     }
     post {
         success {
-            echo 'Build and Sonar analysis successful!'
+            echo 'Build and SonarQube analysis completed successfully!'
         }
         failure {
-            echo 'Build or Sonar analysis failed!'
+            echo 'There was a failure in build or SonarQube analysis.'
         }
     }
 }
