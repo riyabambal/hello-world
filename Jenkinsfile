@@ -18,7 +18,7 @@ pipeline {
         }
         stage('Code Analysis with SonarQube') {
             environment {
-                SONARQUBE_SERVER = 'sonarqube' // Replace with your SonarQube installation name configured in Jenkins
+                SONARQUBE_SERVER = 'sonarqube' // Name of the SonarQube server configured in Jenkins
             }
             steps {
                 withSonarQubeEnv(SONARQUBE_SERVER) {
@@ -29,12 +29,10 @@ pipeline {
     }
     post {
         success {
-            echo 'Build and deployment successful!'
+            echo 'Build and Sonar analysis successful!'
         }
         failure {
-            echo 'Build failed!'
+            echo 'Build or Sonar analysis failed!'
         }
     }
 }
- 
- 
