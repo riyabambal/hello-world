@@ -1,41 +1,114 @@
 pipeline {
+
     agent any
+
     stages {
+
         stage('Checkout Code') {
+
             steps {
-                git 'https://github.com/riyabambal/hello-world.git'
+
+                git 'https://github.com/Ysuryakant50/hello-world.git'
+
             }
+
         }
+
         stage('Build with Maven') {
+
             steps {
+
                 sh 'mvn clean package'
+
             }
+
         }
+
         stage('Run Unit Tests') {
+
             steps {
+
                 sh 'mvn test'
+
             }
+
         }
-        stage('Code Analysis with SonarQube') {
-            environment {
-                SONARQUBE_SERVER = 'riya-sonar'  // Your Jenkins SonarQube server name
-            }
-            steps {
-                withSonarQubeEnv(SONARQUBE_SERVER) {
-                    // Use the specific tool if configured
-                    // If you want to specify the scanner manually, create and use the tool
-                    // Otherwise, mvn plugin uses sonar-scanner internally
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=riya-sonar-project'
-                }
-            }
+
+        stage('OWASP Dependency-Check') {
+      steps {
+        catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+          sh """
+            ${OWASP_TOOL_HOME}/bin/dependency-check.sh \
+              --project "${SONAR_PROJECT_KEY}" \
+              --scan . \
+              --format XML \
+              --format HTML \
+              --out reports/dependency-check
+          """
+          dependencyCheckPublisher(
+            pattern: 'reports/dependency-check/dependency-check-report.xml',
+            stopBuild: false
+          )
         }
+      }
     }
+
+    stage('SonarQube Analysis') {
+      when { expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' } }
+      steps {
+        withSonarQubeEnv('SonarQube') {
+          sh """
+            ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+              -Dsonar.sources=src \
+              -Dsonar.host.url=${env.SONAR_HOST_URL} \
+              -Dsonar.login=${SONAR_TOKEN}
+          """
+        }
+      }
+      post {
+        always {
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+        stage('Trivy Container Scan') {
+      when { expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' } }
+      steps {
+        script {
+          def tag = "${DOCKER_REPO}:1.0.${env.BUILD_NUMBER}"
+          sh """
+            trivy image \
+              --severity HIGH,CRITICAL \
+              --exit-code 1 \
+              --no-progress \
+              ${tag} > reports/trivy-report.txt
+          """
+        }
+      }
+      post {
+        always {
+          archiveArtifacts artifacts: 'reports/trivy-report.txt', fingerprint: true
+        }
+      }
+    }
+
+
     post {
+
         success {
-            echo 'Build and SonarQube analysis completed successfully!'
+
+            echo 'Build and deployment successful!'
+
         }
+
         failure {
-            echo 'There was a failure in build or SonarQube analysis.'
+
+            echo 'Build failed!'
+
         }
+
     }
+
 }
+ 
