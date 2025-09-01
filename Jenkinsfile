@@ -8,7 +8,7 @@ pipeline {
 
             steps {
 
-                git 'https://github.com/Ysuryakant50/hello-world.git'
+                git 'https://github.com/riyabambal/hello-world.git'
 
             }
 
